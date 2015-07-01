@@ -153,12 +153,14 @@ while (~done)
     H11p = A*(sparse(diag(1./sigx))*A');
     
 %    opts.POSDEF = false; opts.SYM = false;
-     
-%   modified by Kai
-%     hcond = rcond(H11p);
-%     dv = H11p \ w1p;
-
     [dv,hcond] = linsolve(H11p, w1p);
+    
+%     modified by Kai
+%     hcond = rcond(H11p);
+%     dv1 = H11p \ w1p;
+%     err1 = norm(H11p * dv - w1p)
+%     err2 = norm(H11p * dv1 - w1p)
+    
     if (hcond < 1e-14)
       disp('Matrix ill-conditioned.  Returning previous iterate.  (See Section 4 of notes for more information.)');
       xp = x;

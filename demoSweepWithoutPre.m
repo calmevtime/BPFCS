@@ -8,7 +8,7 @@ start_spams
 clear
 clc
 
-load ./Results/sweeplambda_WithoutPre_batchsize50.mat
+load ./Results/sweeplambda_WithoutPre_batchsize50.mat  normErr
 
 mdivision = 20;
 
@@ -31,7 +31,7 @@ atoms = 512;
 
 RawInp = RawInpLoad(1:n_dl*epochs);
 RawInp = reshape(RawInp , n_dl, epochs);
-crossValidFactor = 0.7;
+crossValidFactor = 0.8;
 
 indexD = randperm(atoms);
 initD = RawInp(:, indexD);
@@ -62,12 +62,14 @@ rsnr_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batch
 cr_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 prd_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 sparsity_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
+maxCorrVal = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 % basis = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 % R1 = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 % R2 = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 % alpha = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 % spCoeff = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 % reconSig = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
+xres_dl = [];
 
 %%
 
@@ -80,13 +82,14 @@ sparsity_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / b
 % end
 
 %%
-for k = 1 : length(sweepParam)
-    for i = 1 : mdivision 
+
+for k = 3 : length(sweepParam)
+    for i = 4 : mdivision 
         m_dl = floor(i * n_dl / mdivision);
         phi_dl = randn(m_dl,n_dl);
 %         phi_dl = orth(phi_dl')';
 
-        for j = 1 : floor(samplesTrain / batchsize)      % adjust iter
+        for j = 30 : floor(samplesTrain / batchsize)      % adjust iter
             param = struct;
             param.iter = j;
             param.batchsize = batchsize;
@@ -105,7 +108,7 @@ for k = 1 : length(sweepParam)
             xs_dl = [];
             x0_dl = [];
             xhat_dl = [];
-            D = [];
+%             D = [];
 
             epochesD = floor(j * param.batchsize);
             X = TrainInp(:,1:epochesD);
@@ -121,6 +124,7 @@ for k = 1 : length(sweepParam)
 
             psi_dl = D;
             A_dl = phi_dl * psi_dl;
+            [maxCorrVal(k,i,j), ind1, ind2] = maxCorr(phi_dl', psi_dl);
 
             for ep = 1:samplesTest
                 y_dl = phi_dl * TestInp(:,ep);
@@ -129,10 +133,18 @@ for k = 1 : length(sweepParam)
                 xs_dl = l1eq_pd(x0_dl, A_dl, [], y_dl, normErr(k,j)); 
                 xhat_dl = psi_dl * xs_dl;
                 
+                figure(1)
+                xres_dl = [xres_dl;xhat_dl];
                 subplot(211)
                 plot(TestInp(:,ep));
                 subplot(212)
                 plot(xhat_dl);
+                
+                figure(2)
+                subplot(211)
+                plot(reshape(TestInp(:,1:ep),1,size(TestInp,1)*ep));
+                subplot(212)
+                plot(xres_dl);
 %                 spCoeff{k,i,j}(:,ep) = {xs_dl};
 %                 reconSig{k,i,j}(:,ep) = {xhat_dl};
                 res = res + sum(norm(TestInp(:,ep) - xhat_dl).^2);

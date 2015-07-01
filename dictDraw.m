@@ -10,7 +10,7 @@ clc
 % % % % % % % % % % % % % % % % % % % % % % % % % % %
 RawInpLoad = load('15814m_ltdbECG_1h.mat');
 RawInpLoad = RawInpLoad.val;
-n_dl = 102;
+n_dl = 128;
 epochs = floor(length(RawInpLoad) / n_dl);    % 4517
 RawInpLoad = RawInpLoad(1:n_dl * epochs);
 
@@ -37,10 +37,10 @@ param.numThreads = -1;
 % param.batchsize = 50;
 param.verbose = false;
 % param.iter = floor(size(TrainInp,2) / param.batchsize); 
-param.clean = false;
+% param.clean = false;
 % param.verbose = true;
 
-param.batchsize = 5;
+param.batchsize = 50;
 param.iter = 2;
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % %

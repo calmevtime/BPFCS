@@ -1,0 +1,21 @@
+function [val, i, j] = maxCorr(mat1, mat2)
+
+if ~ismatrix(mat1)
+    error('Input must be a matrix');
+end
+
+if ~ismatrix(mat2)
+    error('Input msut be a matrix')
+end
+
+if size(mat1,1) ~= size(mat2,1)
+    error('Input must have the same size')
+end
+
+for i = size(mat1,2)
+    for j = size(mat2,2)
+        innerProd(i,j) = mat1(:,i) .* mat2(:,j);
+    end
+end
+
+max(innerProd);

@@ -61,18 +61,18 @@ normErr = zeros(length(sweepParam),length(1:floor(samplesTrain / batchsize)));
 sparCoef = zeros(length(sweepParam),length(1:floor(samplesTrain / batchsize)));
 
 %%
-poolobj = gcp('nocreate'); % If no pool, do not create new one.
-
-if isempty(poolobj)
-    poolsize = 0;
-    parpool('local',4);
-else
-    poolsize = poolobj.NumWorkers;
-end
+% poolobj = gcp('nocreate'); % If no pool, do not create new one.
+% 
+% if isempty(poolobj)
+%     poolsize = 0;
+%     parpool('local',4);
+% else
+%     poolsize = poolobj.NumWorkers;
+% end
 
 %%
  for i = 1 : length(sweepParam)
-    parfor k = 1 : floor(samplesTrain / batchsize)      % adjust iter
+    for k = 1 : floor(samplesTrain / batchsize)      % adjust iter
         param = struct;
         param.iter = k;
         param.batchsize = batchsize;
