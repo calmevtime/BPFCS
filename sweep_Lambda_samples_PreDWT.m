@@ -40,12 +40,10 @@ RawInp = RawInp(:,atoms+1:end);
 epochs = epochs - atoms;
 
 TrainInp = RawInp(:, 1 : floor(epochs*crossValidFactor));
-TrainInp = TrainInp - repmat(mean(TrainInp),[size(TrainInp,1),1]);
-TrainInp = TrainInp ./ repmat(sqrt(sum(TrainInp.^2)),[size(TrainInp,1),1]);
-
-TestInp = RawInp(:, (size(TrainInp,2)+1):epochs);
-TestInp = TestInp - repmat(mean(TestInp),[size(TestInp,1),1]);
-TestInp = TestInp ./ repmat(sqrt(sum(TestInp.^2)),[size(TestInp,1),1]);
+wt = haarmtx(n_dl);
+TrainInpDWT = wt * TrainInp;
+TrainInpDWT = TrainInpDWT - repmat(mean(TrainInpDWT),[size(TrainInpDWT,1),1]);
+TrainInpDWT = TrainInpDWT ./ repmat(sqrt(sum(TrainInpDWT.^2)),[size(TrainInpDWT,1),1]);
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % %
 % Compressive sensing

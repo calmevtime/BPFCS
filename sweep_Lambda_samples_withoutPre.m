@@ -47,6 +47,17 @@ TestInp = RawInp(:, (size(TrainInp,2)+1):epochs);
 TestInp = TestInp - repmat(mean(TestInp),[size(TestInp,1),1]);
 TestInp = TestInp ./ repmat(sqrt(sum(TestInp.^2)),[size(TestInp,1),1]);
 
+% % % % % % % % % % % % % % % % % % % % % % % % % % %
+% Compressive sensing
+% % % % % % % % % % % % % % % % % % % % % % % % % % %
+
+samplesTrain = size(TrainInp,2);
+
+sweepParam = [1e-4, 1e-3, 1e-2, 1e-1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
+
+objFun = zeros(length(sweepParam),length(1:floor(samplesTrain / batchsize)));
+normErr = zeros(length(sweepParam),length(1:floor(samplesTrain / batchsize)));
+sparCoef = zeros(length(sweepParam),length(1:floor(samplesTrain / batchsize)));
 
 %%
 

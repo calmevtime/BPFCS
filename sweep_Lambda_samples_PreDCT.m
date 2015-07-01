@@ -40,8 +40,10 @@ RawInp = RawInp(:,atoms+1:end);
 epochs = epochs - atoms;
 
 TrainInp = RawInp(:, 1 : floor(epochs*crossValidFactor));
-TrainInp = TrainInp - repmat(mean(TrainInp),[size(TrainInp,1),1]);
-TrainInp = TrainInp ./ repmat(sqrt(sum(TrainInp.^2)),[size(TrainInp,1),1]);
+wt = dctmtx(n_dl);
+TrainInpDCT = wt * TrainInp;
+TrainInpDCT = TrainInpDCT - repmat(mean(TrainInpDCT),[size(TrainInpDCT,1),1]);
+TrainInpDCT = TrainInpDCT ./ repmat(sqrt(sum(TrainInpDCT.^2)),[size(TrainInpDCT,1),1]);
 
 TestInp = RawInp(:, (size(TrainInp,2)+1):epochs);
 TestInp = TestInp - repmat(mean(TestInp),[size(TestInp,1),1]);
@@ -51,7 +53,7 @@ TestInp = TestInp ./ repmat(sqrt(sum(TestInp.^2)),[size(TestInp,1),1]);
 % Compressive sensing
 % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
-samplesTrain = size(TrainInpDCT,2);
+samplesTrain = size(TrainInp,2);
 
 sweepParam = [1e-4, 1e-3, 1e-2, 1e-1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
 
