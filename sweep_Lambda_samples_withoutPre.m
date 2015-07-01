@@ -71,7 +71,7 @@ sparCoef = zeros(length(sweepParam),length(1:floor(samplesTrain / batchsize)));
 
 %%
  for i = 1 : length(sweepParam)
-    parfor k = 1 : floor(samplesTrain / batchsize)      % adjust iter
+    for k = 1 : floor(samplesTrain / batchsize)      % adjust iter
 
         param = struct;
         param.iter = k;
@@ -107,4 +107,36 @@ maxNormErr = max(normErr');
 
 filename = sprintf('./Results/sweeplambda_WithoutPre_batchsize%d.mat', batchsize);
 save(filename,'-v7.3')
+
+figure
+num = length(sweepParam);
+str = cell(1,num);
+
+subplot(211)
+for i = 1 : num
+    plot(normErr(i,:));
+    hold on
+    str{i} = ['lambda = ', num2str(sweepParam(i))];
+end
+
+xlabel('Iteration');
+ylabel('l2norm of error');
+
+legend(str);
+
+subplot(212)
+for i = 1 : num
+    plot(sparCoef(i,:)*100);
+    hold on
+    str{i} = {'lambda = ', num2str(sweepParam(i))};
+end
+xlabel('Iteration');
+ylabel('sparsity %');
+
+legend(str);
+
+
+
+
+
 
