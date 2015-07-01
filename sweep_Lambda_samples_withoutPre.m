@@ -24,25 +24,29 @@ RawInpLoad = RawInpLoad(1:n_dl * epochs);
 % Prepare training and testing data
 % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
+batchsize = 50;
+atoms = 512;
+
 RawInp = RawInpLoad(1:n_dl*epochs);
 RawInp = reshape(RawInp , n_dl, epochs);
 crossValidFactor = 0.7;
 
-TrainInp = RawInp(:, 1:floor(epochs*crossValidFactor));
+indexD = randperm(atoms);
+initD = RawInp(:, indexD);
+initD = initD - repmat(mean(initD),[size(initD,1),1]);
+initD = initD ./ repmat(sqrt(sum(initD.^2)),[size(initD,1),1]);
+
+RawInp = RawInp(:,atoms+1:end);
+epochs = epochs - atoms;
+
+TrainInp = RawInp(:, 1 : floor(epochs*crossValidFactor));
 TrainInp = TrainInp - repmat(mean(TrainInp),[size(TrainInp,1),1]);
 TrainInp = TrainInp ./ repmat(sqrt(sum(TrainInp.^2)),[size(TrainInp,1),1]);
 
-% % % % % % % % % % % % % % % % % % % % % % % % % % %
-% Compressive sensing
-% % % % % % % % % % % % % % % % % % % % % % % % % % %
+TestInp = RawInp(:, (size(TrainInp,2)+1):epochs);
+TestInp = TestInp - repmat(mean(TestInp),[size(TestInp,1),1]);
+TestInp = TestInp ./ repmat(sqrt(sum(TestInp.^2)),[size(TestInp,1),1]);
 
-samplesTrain = size(TrainInp,2);
-
-sweepParam = [1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
-
-objFun = zeros(length(sweepParam),length(1:floor(samplesTrain / 50)));
-normErr = zeros(length(sweepParam),length(1:floor(samplesTrain / 50)));
-sparCoef = zeros(length(sweepParam),length(1:floor(samplesTrain / 50)));
 
 %%
 
@@ -56,16 +60,17 @@ sparCoef = zeros(length(sweepParam),length(1:floor(samplesTrain / 50)));
 
 %%
  for i = 1 : length(sweepParam)
-    parfor k = 1 : floor(samplesTrain / 50)      % adjust iter
+    parfor k = 1 : floor(samplesTrain / batchsize)      % adjust iter
 
         param = struct;
         param.iter = k;
-        param.batchsize = 50;
-        param.K = 512;
+        param.batchsize = batchsize;
+        param.K = atoms;
         param.lambda = sweepParam(i);
         param.numThreads = -1; 
         param.verbose = false;
         param.iter_updateD = 1;
+        param.D = initD;
 
         epochesD = floor(k * param.batchsize);
         X = TrainInp(:,1:epochesD);
@@ -89,6 +94,6 @@ maxNormErr = max(normErr');
 
 % delete(poolobj)
 
-filename = sprintf('./Results/sweeplambda_WithoutPre_batchsize%d.mat', 50);
+filename = sprintf('./Results/sweeplambda_WithoutPre_batchsize%d.mat', batchsize);
 save(filename,'-v7.3')
 

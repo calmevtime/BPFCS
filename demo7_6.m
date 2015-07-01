@@ -18,18 +18,27 @@ RawInpLoad = load('15814m_ltdbECG_1h.mat');
 RawInpLoad = RawInpLoad.val;
 n_dl = 128;
 m_dl = 51;
+
 epochs = floor(length(RawInpLoad) / n_dl);    % 4517
-RawInpLoad = RawInpLoad(1:n_dl * epochs);
+RawInpLoad = RawInpLoad(1 : n_dl * epochs);
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % %
 % Prepare training and testing data
-% % % % % % % % % % % % % % % % % % % % % % % % % % %
+% % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+batchsize = 50;
+atoms = 512;
 
 RawInp = RawInpLoad(1:n_dl*epochs);
 RawInp = reshape(RawInp , n_dl, epochs);
 crossValidFactor = 0.7;
 
-TrainInp = RawInp(:, 1:floor(epochs*crossValidFactor));
+InitD = RawInp(:, 1 : atoms);
+
+RawInp = RawInp(:,atoms+1:end);
+epochs = epochs - atoms;
+
+TrainInp = RawInp(:, 1 : floor(epochs*crossValidFactor));
 TrainInp = TrainInp - repmat(mean(TrainInp),[size(TrainInp,1),1]);
 TrainInp = TrainInp ./ repmat(sqrt(sum(TrainInp.^2)),[size(TrainInp,1),1]);
 
@@ -37,7 +46,7 @@ TestInp = RawInp(:, (size(TrainInp,2)+1):epochs);
 TestInp = TestInp - repmat(mean(TestInp),[size(TestInp,1),1]);
 TestInp = TestInp ./ repmat(sqrt(sum(TestInp.^2)),[size(TestInp,1),1]);
 
-% % % % % % % % % % % % % % % % % % % % % % % % % % %
+%% % % % % % % % % % % % % % % % % % % % % % % % % % %
 % Compressive sensing
 % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
@@ -55,6 +64,8 @@ alpha = cell(mdivision,length(1:floor(samplesTrain / 50)));
 reconSig = cell(mdivision,length(1:floor(samplesTrain / 50)));
 
 
+
+
 %%
 
 % poolobj = gcp('nocreate'); % If no pool, do not create new one.
@@ -67,12 +78,12 @@ reconSig = cell(mdivision,length(1:floor(samplesTrain / 50)));
 
 %%
 
- for i = 1 : mdivision 
+ for i = 10 : mdivision 
     m_dl = floor(i * n_dl / mdivision);
     phi_dl = randn(m_dl,n_dl);
 %     phi_dl = phi_dl ./ repmat(sqrt(sum(phi_dl.^2)),[size(phi_dl,1),1]);
         
-    for j = 40 : floor(samplesTrain / 50)      % adjust iter
+    for j = 1 : floor(samplesTrain / 50)      % adjust iter
         param = struct;
         param.iter = j;
         param.batchsize = 50;
@@ -102,7 +113,7 @@ reconSig = cell(mdivision,length(1:floor(samplesTrain / 50)));
 %         R2{i,j} = 0.5*sum(X-D*coef).^2;
 %         fprintf('Objective function for i=%d, j=%d is %f', i, j, R1{i,j});
         
-        basis(i, j) = {D};
+%         basis(i, j) = {D};
 
         psi_dl = D;
         A_dl = phi_dl * psi_dl;

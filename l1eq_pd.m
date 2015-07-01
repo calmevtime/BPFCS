@@ -73,14 +73,21 @@ if (largescale)
 else
   if (norm(A*x0-b)/norm(b) > cgtol)
     disp('Starting point infeasible; using x0 = At*inv(AAt)*y.');
-%     opts.POSDEF = false; opts.SYM = true;
     
-%     [w, hcond] = linsolve(A*A', b, opts);
+%     eigA = eig(A*A');
+%     opts.POSDEF = false;
+%     for i = 1 : rank(A*A')
+%         if(eigA(i) <= 0)
+%             opts.POSDEF = false;
+%         end
+%     end
+%     
+    [w, hcond] = linsolve(A*A', b);
 
 %     added by Kai
 
-    hcond = 1 / cond(A*A',1);
-    w = A*A' \ b;
+%     hcond = rcond(A*A');
+%     w = A*A' \ b;
     
     if (hcond < 1e-14)
       disp('A*At is ill-conditioned: cannot find starting point');
@@ -145,13 +152,13 @@ while (~done)
     w1p = -(w3 - A*(w1./sigx - w2.*sig2./(sigx.*sig1)));
     H11p = A*(sparse(diag(1./sigx))*A');
     
-%   opts.POSDEF = false; opts.SYM = false;
+%    opts.POSDEF = false; opts.SYM = false;
      
 %   modified by Kai
-    hcond = 1 / cond(H11p,1);
-    dv = H11p \ w1p;
+%     hcond = rcond(H11p);
+%     dv = H11p \ w1p;
 
-%     [dv,hcond] = linsolve(H11p, w1p, opts);
+    [dv,hcond] = linsolve(H11p, w1p);
     if (hcond < 1e-14)
       disp('Matrix ill-conditioned.  Returning previous iterate.  (See Section 4 of notes for more information.)');
       xp = x;
