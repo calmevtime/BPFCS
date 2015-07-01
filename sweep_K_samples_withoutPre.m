@@ -14,6 +14,16 @@ mdivision = 20;
 % Prepare raw data
 % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
+RawInpLoad = load('15814m_ltdbECG_1h.mat');
+RawInpLoad = RawInpLoad.val;
+n_dl = 128;
+epochs = floor(length(RawInpLoad) / n_dl);    % 4517
+RawInpLoad = RawInpLoad(1:n_dl * epochs);
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % %
+% Prepare raw data
+% % % % % % % % % % % % % % % % % % % % % % % % % % %
+
 batchsize = 50;
 atoms = 512;
 lambda = 1e-2;
@@ -51,14 +61,14 @@ normErr = zeros(length(sweepParam),length(1:floor(samplesTrain / batchsize)));
 sparCoef = zeros(length(sweepParam),length(1:floor(samplesTrain / batchsize)));
 
 %%
-% poolobj = gcp('nocreate'); % If no pool, do not create new one.
-% 
-% if isempty(poolobj)
-%     poolsize = 0;
-%     parpool('local',8);
-% else
-%     poolsize = poolobj.NumWorkers;
-% end
+poolobj = gcp('nocreate'); % If no pool, do not create new one.
+
+if isempty(poolobj)
+    poolsize = 0;
+    parpool('local',4);
+else
+    poolsize = poolobj.NumWorkers;
+end
 
 %%
  for i = 1 : length(sweepParam)
