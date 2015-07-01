@@ -27,15 +27,24 @@ RawInpLoad = RawInpLoad(1:n_dl * epochs);
 % Prepare training and testing data
 % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
+batchsize = 50;
+atoms = 512;
+
 RawInp = RawInpLoad(1:n_dl*epochs);
 RawInp = reshape(RawInp , n_dl, epochs);
 crossValidFactor = 0.7;
 
-TrainInp = RawInp(:, 1:floor(epochs*crossValidFactor));
-wt = haarmtx(n_dl);
-TrainInpDWT = wt * TrainInp;
-TrainInpDWT = TrainInpDWT - repmat(mean(TrainInpDWT),[size(TrainInpDWT,1),1]);
-TrainInpDWT = TrainInpDWT ./ repmat(sqrt(sum(TrainInpDWT.^2)),[size(TrainInpDWT,1),1]);
+indexD = randperm(atoms);
+initD = RawInp(:, indexD);
+initD = initD - repmat(mean(initD),[size(initD,1),1]);
+initD = initD ./ repmat(sqrt(sum(initD.^2)),[size(initD,1),1]);
+
+RawInp = RawInp(:,atoms+1:end);
+epochs = epochs - atoms;
+
+TrainInp = RawInp(:, 1 : floor(epochs*crossValidFactor));
+TrainInp = TrainInp - repmat(mean(TrainInp),[size(TrainInp,1),1]);
+TrainInp = TrainInp ./ repmat(sqrt(sum(TrainInp.^2)),[size(TrainInp,1),1]);
 
 TestInp = RawInp(:, (size(TrainInp,2)+1):epochs);
 TestInp = TestInp - repmat(mean(TestInp),[size(TestInp,1),1]);
@@ -50,16 +59,16 @@ samplesTest  = size(TestInp,2);
 
 sweepParam = [1e-4, 1e-3, 1e-2, 1e-1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
 
-rsnr_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / 50)));
-cr_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / 50)));
-prd_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / 50)));
-sparsity_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / 50)));
-% basis = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / 50)));
-% R1 = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / 50)));
-% R2 = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / 50)));
-% alpha = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / 50)));
-spCoeff = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / 50)));
-reconSig = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / 50)));
+rsnr_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
+cr_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
+prd_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
+sparsity_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
+% basis = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
+% R1 = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
+% R2 = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
+% alpha = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
+% spCoeff = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
+% reconSig = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 
 %%
 
@@ -77,15 +86,16 @@ for k = 1 : length(sweepParam)
         m_dl = floor(i * n_dl / mdivision);
         phi_dl = randn(m_dl,n_dl);
 
-        parfor j = 1 : floor(samplesTrain / 50)      % adjust iter
+        parfor j = 1 : floor(samplesTrain / batchsize)      % adjust iter
             param = struct;
             param.iter = j;
-            param.batchsize = 50;
-            param.K = 512;
+            param.batchsize = batchsize;
+            param.K = atoms;
             param.lambda = sweepParam(k);
             param.numThreads = -1; 
             param.verbose = false;
             param.iter_updateD = 1;
+            param.D = initD;
 
             res = 0;
             x2 = 0;
@@ -104,8 +114,8 @@ for k = 1 : length(sweepParam)
 %             coef = mexLasso(X,D,param);
 %             alpha{i,j} = coef;
 %             R1{i,j} = mean(0.5*sum((X-D*coef).^2) + param.lambda*sum(abs(coef)));
-        %         R2{i,j} = mean(0.5*sum(X-D*alpha{i,j}).^2);
-        %         fprintf('Objective function for i=%d, j=%d is %f', i, j, R1{i,j});
+%             R2{i,j} = mean(0.5*sum(X-D*alpha{i,j}).^2);
+%             fprintf('Objective function for i=%d, j=%d is %f', i, j, R1{i,j});
 
 %             basis(i, j) = {D};
 
@@ -118,8 +128,8 @@ for k = 1 : length(sweepParam)
                 xs_dl = l1eq_pd(x0_dl, A_dl, [], y_dl, normErr(k,j)); 
                 xhat_dl = psi_dl * xs_dl;
 
-                spCoeff{k,i,j}(:,ep) = {xs_dl};
-                reconSig{k,i,j}(:,ep) = {xhat_dl};
+%                 spCoeff{k,i,j}(:,ep) = {xs_dl};
+%                 reconSig{k,i,j}(:,ep) = {xhat_dl};
                 res = res + sum(norm(TestInp(:,ep) - xhat_dl).^2);
                 x2 = x2 + sum(TestInp(:,ep).^2);
                 spar = spar + length(find(abs(xs_dl)>0.001) ); 
@@ -134,7 +144,7 @@ end
 
 delete(poolobj)
 
-filename = sprintf('./Results/sweeplambda_preDWT_m%d_batchsize%d.mat', mdivision, 50);
+filename = sprintf('./Results/sweeplambda_preDWT_m%d_batchsize%d.mat', mdivision, batchsize);
 save(filename,'-v7.3');
 
 % subplot(211)

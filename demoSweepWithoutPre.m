@@ -66,8 +66,8 @@ sparsity_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / b
 % R1 = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 % R2 = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 % alpha = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
-spCoeff = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
-reconSig = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
+% spCoeff = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
+% reconSig = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 
 %%
 
@@ -80,13 +80,13 @@ reconSig = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batch
 % end
 
 %%
-for k = 3 : length(sweepParam)
-    for i = 2 : mdivision 
+for k = 1 : length(sweepParam)
+    for i = 1 : mdivision 
         m_dl = floor(i * n_dl / mdivision);
         phi_dl = randn(m_dl,n_dl);
 %         phi_dl = orth(phi_dl')';
 
-        for j = 20 : floor(samplesTrain / batchsize)      % adjust iter
+        for j = 1 : floor(samplesTrain / batchsize)      % adjust iter
             param = struct;
             param.iter = j;
             param.batchsize = batchsize;
@@ -126,12 +126,7 @@ for k = 3 : length(sweepParam)
                 y_dl = phi_dl * TestInp(:,ep);
                 x0_dl = pinv(A_dl) * y_dl; 
                 
-%                 x0_dl = A_dl \ y_dl;
-
-                norm(A_dl*x0_dl-y_dl);
-
-%                 xs_dl = l1eq_pd(x0_dl, A_dl, [], y_dl, normErr(k,j)); 
-                xs_dl = l1eq_pd(x0_dl, A_dl, [], y_dl, 1e-2);
+                xs_dl = l1eq_pd(x0_dl, A_dl, [], y_dl, normErr(k,j)); 
                 xhat_dl = psi_dl * xs_dl;
                 
                 subplot(211)

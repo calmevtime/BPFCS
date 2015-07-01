@@ -46,9 +46,9 @@ samplesTrain = size(TrainInp,2);
 
 sweepParam = [128, 256, 512, 1024, 2048];
 
-objFun = zeros(length(sweepParam),length(1:floor(samplesTrain / 50)));
-normErr = zeros(length(sweepParam),length(1:floor(samplesTrain / 50)));
-sparCoef = zeros(length(sweepParam),length(1:floor(samplesTrain / 50)));
+objFun = zeros(length(sweepParam),length(1:floor(samplesTrain / batchsize)));
+normErr = zeros(length(sweepParam),length(1:floor(samplesTrain / batchsize)));
+sparCoef = zeros(length(sweepParam),length(1:floor(samplesTrain / batchsize)));
 
 %%
 % poolobj = gcp('nocreate'); % If no pool, do not create new one.
