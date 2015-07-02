@@ -135,7 +135,7 @@ for i = 1 : 60
     han = annotation('textbox', [0.4,0.89,0.1,0.1], 'String', ['batch index for training: ',num2str(i)]);
 end
 
-close(writerObj);
+% close(writerObj);
 
 
 %%

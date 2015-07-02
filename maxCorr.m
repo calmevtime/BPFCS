@@ -14,9 +14,17 @@ end
 
 innerProd = zeros(size(mat1,2), size(mat2,2));
 
-for i = 1 : size(mat1,2)
-    for j = 1 : size(mat2,2)
-        innerProd(i,j) = sum(abs(mat1(:,i) .* mat2(:,j)));
+if isequal(mat1,mat2)
+    for i = 1 : size(mat1,2) - 1
+        for j = i + 1 : size(mat2,2)
+            innerProd(i,j) = sum(abs(mat1(:,i) .* mat2(:,j)));
+        end
+    end
+else
+    for i = 1 : size(mat1,2)
+        for j = 1 : size(mat2,2)
+            innerProd(i,j) = sum(abs(mat1(:,i) .* mat2(:,j)));
+        end
     end
 end
 

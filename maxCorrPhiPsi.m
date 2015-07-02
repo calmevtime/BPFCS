@@ -58,11 +58,9 @@ samplesTest  = size(TestInp,2);
 
 sweepParam = [1e-4, 1e-3, 1e-2, 1e-1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
 
-rsnr_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
-cr_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
-prd_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
-sparsity_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
-maxCorrVal = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
+
+maxCorrVal = zeros(mdivision,length(1:floor(samplesTrain / batchsize)));
+maxCorrPsi = zeros(mdivision,length(1:floor(samplesTrain / batchsize)));
 % basis = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 % R1 = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 % R2 = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
@@ -76,7 +74,7 @@ for i = 1 : mdivision
     m_dl = floor(i * n_dl / mdivision);
     phi_dl = randn(m_dl,n_dl);
 
-    parfor j = 1 : floor(samplesTrain / batchsize)      % adjust iter
+    for j = 1 : floor(samplesTrain / batchsize)      % adjust iter
         param = struct;
         param.iter = j;
         param.batchsize = batchsize;
@@ -103,12 +101,21 @@ for i = 1 : mdivision
         psi_dl = D;
         A_dl = phi_dl * psi_dl;
         [maxCorrVal(i,j), ind1, ind2] = maxCorr(phi_dl', psi_dl);
+        [maxCorrPsi(i,j), ind1, ind2] = maxCorr(psi_dl, psi_dl);
         disp(['i = ',num2str(i),' j = ',num2str(j)]);
     end
 end
 
+subplot(211)
+plot(maxCorrVal(1,:));
+xlabel('Training samples');
+ylabel('maximum cross-correlation between Phi and Psi');
+subplot(212)
+plot(maxCorrPsi(1,:));
+xlabel('Training samples');
+ylabel('maximum self-correlation of psi_dl');
 
-delete(poolobj)
+% delete(poolobj)
 
 filename = sprintf('./Results/maxCorrPhiPsi_withoutPre_m%d_batchsize%d.mat', mdivision, batchsize);
 save(filename,'-v7.3');
