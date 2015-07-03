@@ -31,7 +31,7 @@ atoms = 512;
 
 RawInp = RawInpLoad(1:n_dl*epochs);
 RawInp = reshape(RawInp , n_dl, epochs);
-crossValidFactor = 0.8;
+crossValidFactor = 0.7;
 
 indexD = randperm(atoms);
 initD = RawInp(:, indexD);
@@ -69,7 +69,7 @@ maxCorrVal = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / ba
 % alpha = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 % spCoeff = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 % reconSig = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
-xres_dl = [];
+% xres_dl = [];
 
 %%
 
@@ -83,13 +83,13 @@ xres_dl = [];
 
 %%
 
-for k = 3 : length(sweepParam)
-    for i = 4 : mdivision 
+for k = 1 : length(sweepParam)
+    for i = 1 : mdivision 
         m_dl = floor(i * n_dl / mdivision);
         phi_dl = randn(m_dl,n_dl);
 %         phi_dl = orth(phi_dl')';
 
-        for j = 30 : floor(samplesTrain / batchsize)      % adjust iter
+        parfor j = 1 : floor(samplesTrain / batchsize)      % adjust iter
             param = struct;
             param.iter = j;
             param.batchsize = batchsize;
@@ -134,7 +134,7 @@ for k = 3 : length(sweepParam)
                 xhat_dl = psi_dl * xs_dl;
                 
                 figure(1)
-                xres_dl = [xres_dl;xhat_dl];
+%                 xres_dl = [xres_dl;xhat_dl];
                 subplot(211)
                 plot(TestInp(:,ep));
                 subplot(212)
@@ -161,7 +161,7 @@ end
 
 delete(poolobj)
 
-filename = sprintf('./Results/sweeplambda_withoutPre_m%d_batchsize%d.mat', mdivision, batchsize);
+filename = sprintf('./Results/demoSweepWithoutPre_m%d_batchsize%d.mat', mdivision, batchsize);
 save(filename,'-v7.3');
 
 % subplot(211)

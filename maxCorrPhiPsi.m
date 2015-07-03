@@ -113,7 +113,7 @@ ylabel('maximum cross-correlation between Phi and Psi');
 subplot(212)
 plot(maxCorrPsi(1,:));
 xlabel('Training samples');
-ylabel('maximum self-correlation of psi_dl');
+ylabel('maximum self-correlation of Psi');
 
 % delete(poolobj)
 

@@ -52,7 +52,7 @@ subplot(211)
 fvals = Fs * (-NFFT / 2 : NFFT / 2 - 1) / NFFT;
 plot(fvals,abs(X));
 xlabel('Frenquency(Hz)');
-ylabel('|DFT Value|');
+ylabel('|DFT Value| of original signal');
 
 %%
 
@@ -63,7 +63,7 @@ fs = 20;
 lpFilt = designfilt('lowpassfir', 'PassbandFrequency', fp/Fs*2, ...
                     'StopbandFrequency', fs/Fs*2, 'PassbandRipple', 0.5, ...
                     'StopbandAttenuation', 40, 'DesignMethod', 'equiripple');
-% fvtool(lpFilt);
+fvtool(lpFilt);
 rawInpFir = filter(lpFilt, RawInp);
 
 X = fftshift(fft(rawInpFir,NFFT));
@@ -71,7 +71,7 @@ fvals = Fs * (-NFFT / 2 : NFFT / 2 - 1) / NFFT;
 subplot(212)
 plot(fvals,abs(X));
 xlabel('Frenquency(Hz)');
-ylabel('|DFT Value|');
+ylabel('|DFT Value| of filtered signal');
 
 crossValidFactor = 0.8;
 TrainInp = rawInpFir(:, 1 : floor(epochs*crossValidFactor));
@@ -80,8 +80,12 @@ TrainInp = TrainInp ./ repmat(sqrt(sum(TrainInp.^2)),[size(TrainInp,1),1]);
 
 subplot(211)
 plot(RawInp)
+xlabel('samples')
+ylabel('original signal');
 subplot(212)
 plot(rawInpFir)
+xlabel('samples')
+ylabel('filtered signal');
 
 %%
 

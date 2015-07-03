@@ -71,7 +71,7 @@ sparCoef = zeros(length(sweepParam),length(1:floor(samplesTrain / batchsize)));
 
 %%
  for i = 1 : length(sweepParam)
-    for k = 1 : floor(samplesTrain / batchsize)      % adjust iter
+    parfor k = 1 : floor(samplesTrain / batchsize)      % adjust iter
 
         param = struct;
         param.iter = k;

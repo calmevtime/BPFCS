@@ -9,7 +9,7 @@ else
     poolsize = poolobj.NumWorkers;
 end
 
-% sweep_Lambda_samples_withoutPre;
+sweep_Lambda_samples_withoutPre;
 
 % sweep_Lambda_samples_PreDCT;
 % sweep_Lambda_samples_PreDWT;
