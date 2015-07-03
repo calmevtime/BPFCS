@@ -1,22 +1,38 @@
 clear
 clc
 
-poolobj = gcp('nocreate'); % If no pool, do not create new one.
-if isempty(poolobj)
-    poolsize = 0;
-    parpool('local',24);
-else
-    poolsize = poolobj.NumWorkers;
+cd /home/kaixu/myGitHub/BPFCS
+start_spams
+cd framework
+
+% 
+% poolobj = gcp('nocreate'); % If no pool, do not create new one.
+% if isempty(poolobj)
+%     poolsize = 0;
+%     parpool('local',24);
+% else
+%     poolsize = poolobj.NumWorkers;
+% end
+
+%%
+
+baseDir = '/home/kaixu/myGitHub/BPFCS/';
+
+
+fileName = {'sweep_Lambda_PreDCT.m', 'sweep_Lambda_PreDWT.m', ...
+            'demoSweepDctPre.m', 'demoSweepDwtPre.m', ...
+            'demoSweepFilterDCT.m'};      
+        
+runDir = fullfile(baseDir, 'runtimeFolder');
+if ~isequal(exist(runDir,'dir'),7)
+    mkdir(runDir);
 end
 
-fileName = {'preDCT/sweep_Lambda_samples_PreDCT', 'preDWT/sweep_Lambda_samples_PreDWT', ...
-            'preDCT/demoSweepDctPre', 'preDWT/demoSweepDwtPre'};
-        
-tmp = runtimeFolder;
-mkdir(tmp);
-for i = 1 : fileName
-    runtmp = fullfile(tmp,fileName{i});
-    demodir = fulltime(fileName{i});
+for i = 1 : length(srcFileName)
+    dstFile = fullfile(runDir,dFileName{i});
+    srcFile = fullfile(srcFileName{i});
+    copyfile(srcFile, dstFile);
+    run(dstFile);
 end
 
 %%
@@ -24,12 +40,11 @@ end
 % sweep_Lambda_samples_withoutPre;
 % sweep_K_samples_withoutPre;
 
-%%
 
 % demoSweepFilter;
 % demoSweepWithoutPre;
-
-demoSweepDctPre;
-demoSweepDwtPre;
+% 
+% demoSweepDctPre;
+% demoSweepDwtPre;
 
 delete(poolobj)
