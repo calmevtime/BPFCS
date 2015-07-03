@@ -14,8 +14,7 @@ get_architecture;
 %   - 'clang'
 %   - 'open64' (amd compiler), optimized for opteron cpus.
 %   - 'vs'  (visual studio compiler) for windows computers (10.0 or more is recommended)
-%            for some unknown reason, the performance obtained with vs is poo
-+r compared to icc/gcc
+%            for some unknown reason, the performance obtained with vs is poor compared to icc/gcc
 compiler='mex';
 
  %%%%%%%%%%%% BLAS/LAPACK CONFIGURATION %%%%%%%%%%%%%%

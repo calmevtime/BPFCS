@@ -1,0 +1,35 @@
+clear
+clc
+
+poolobj = gcp('nocreate'); % If no pool, do not create new one.
+if isempty(poolobj)
+    poolsize = 0;
+    parpool('local',24);
+else
+    poolsize = poolobj.NumWorkers;
+end
+
+fileName = {'preDCT/sweep_Lambda_samples_PreDCT', 'preDWT/sweep_Lambda_samples_PreDWT', ...
+            'preDCT/demoSweepDctPre', 'preDWT/demoSweepDwtPre'};
+        
+tmp = runtimeFolder;
+mkdir(tmp);
+for i = 1 : fileName
+    runtmp = fullfile(tmp,fileName{i});
+    demodir = fulltime(fileName{i});
+end
+
+%%
+
+% sweep_Lambda_samples_withoutPre;
+% sweep_K_samples_withoutPre;
+
+%%
+
+% demoSweepFilter;
+% demoSweepWithoutPre;
+
+demoSweepDctPre;
+demoSweepDwtPre;
+
+delete(poolobj)
