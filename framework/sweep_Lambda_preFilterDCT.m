@@ -32,8 +32,8 @@ RawInp = RawInpLoad(1:n_dl*epochs);
 
 N = 20;
 Fs = 128;
-fp = 3;
-fs = 20;
+fp = 20;
+fs = 50;
 
 lpFilt = designfilt('lowpassfir', 'PassbandFrequency', fp/Fs*2, ...
                     'StopbandFrequency', fs/Fs*2, 'PassbandRipple', 0.5, ...
@@ -121,8 +121,8 @@ sparCoef = zeros(length(sweepParam),length(1:floor(samplesTrain / batchsize)));
         normErr(i,k) = mean(0.5*sum((X-D*coef).^2));
         sparCoef(i,k) = 1 - length(find((coef))) / length(coef(:));
         
-        disp(sprintf('Iteration (%d, %d) preDCT: objective function is %f', i, k, objFun(i,k)));
-        disp(sprintf('Iteration (%d, %d) preDCT: L-2 norm of error is %f\n', i, k, normErr(i,k)));
+        disp(sprintf('Iteration (%d, %d) preFilterDCT: objective function is %f', i, k, objFun(i,k)));
+        disp(sprintf('Iteration (%d, %d) preFilterDCT: L-2 norm of error is %f\n', i, k, normErr(i,k)));
 %         disp(sprintf('Iteration (%d, %d) without pre: sparsity of coeff is %f\n', i, k, sparCoef(i,k)));
     end
  end
@@ -134,4 +134,40 @@ sparCoef = zeros(length(sweepParam),length(1:floor(samplesTrain / batchsize)));
 
 filename = sprintf('../Results/preFilterDCT/sweeplambda_preFilterDCT_batchsize%d.mat', batchsize);
 save(filename,'-v7.3')
+
+%%
+
+% dateToday = date;
+% plotSweepParam(dateToday, 'preFilterDCT', normErr, sparCoef, sweepParam);
+
+%%
+
+% figure
+% num = length(sweepParam);
+% str = cell(1,num);
+% 
+% subplot(211)
+% for i = 1 : num
+%     plot(normErr(i,:));
+%     hold on
+%     str{i} = ['lambda = ', num2str(sweepParam(i))];
+% end
+% 
+% xlabel('Iteration');
+% ylabel('l2norm of error');
+% 
+% legend(str);
+% 
+% subplot(212)
+% for i = 1 : num
+%     plot(sparCoef(i,:)*100);
+%     hold on
+%     str{i} = {'lambda = ', num2str(sweepParam(i))};
+% end
+% xlabel('Iteration');
+% ylabel('sparsity %');
+% 
+% legend(str);
+% 
+% 
 

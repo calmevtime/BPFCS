@@ -16,7 +16,7 @@ cd(fullfile(baseDir, 'framework'));
 poolobj = gcp('nocreate'); % If no pool, do not create new one.
 if isempty(poolobj)
     poolsize = 0;
-    parpool('local',24);
+    parpool('local',20);
 else
     poolsize = poolobj.NumWorkers;
 end
@@ -41,15 +41,18 @@ end
 
 %%
 
-sweep_Lambda_preFilter;
-sweep_Lambda_preFilterDCT;
-sweep_Lambda_withoutPre;
-sweep_Lambda_PreDCT;
-sweep_Lambda_PreDWT;
-
+% sweep_Lambda_preFilter;
+% sweep_Lambda_preFilterDCT;
+% sweep_Lambda_withoutPre;
+% sweep_Lambda_PreDCT;
+% sweep_Lambda_PreDWT;
+% 
 demoSweepFilter;
+demoSweepFilterDCT;
+demoSweepWithoutPre;
 demoSweepDctPre;
 demoSweepDwtPre;
-demoSweepFilterDCT;
+% demoSweepWithoutPreThres;
+
 
 delete(poolobj)

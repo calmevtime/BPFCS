@@ -32,8 +32,8 @@ RawInp = RawInpLoad(1:n_dl*epochs);
 
 N = 20;
 Fs = 128;
-fp = 3;
-fs = 20;
+fp = 20;
+fs = 50;
 
 lpFilt = designfilt('lowpassfir', 'PassbandFrequency', fp/Fs*2, ...
                     'StopbandFrequency', fs/Fs*2, 'PassbandRipple', 0.5, ...
@@ -41,7 +41,7 @@ lpFilt = designfilt('lowpassfir', 'PassbandFrequency', fp/Fs*2, ...
 % fvtool(lpFilt);
 rawInpFir = filter(lpFilt, RawInp);
 
-
+% NFFT = 256;
 % X = fftshift(fft(rawInpFir,NFFT));
 % fvals = Fs * (-NFFT / 2 : NFFT / 2 - 1) / NFFT;
 % subplot(212)
@@ -118,8 +118,8 @@ sparCoef = zeros(length(sweepParam),length(1:floor(samplesTrain / batchsize)));
         normErr(i,k) = mean(0.5*sum((X-D*coef).^2));
         sparCoef(i,k) = 1 - length(find((coef))) / length(coef(:));
         
-        disp(sprintf('Iteration (%d, %d) preDCT: objective function is %f', i, k, objFun(i,k)));
-        disp(sprintf('Iteration (%d, %d) preDCT: L-2 norm of error is %f\n', i, k, normErr(i,k)));
+        disp(sprintf('Iteration (%d, %d) preFilter: objective function is %f', i, k, objFun(i,k)));
+        disp(sprintf('Iteration (%d, %d) preFilter: L-2 norm of error is %f\n', i, k, normErr(i,k)));
 %         disp(sprintf('Iteration (%d, %d) without pre: sparsity of coeff is %f\n', i, k, sparCoef(i,k)));
     end
  end
@@ -132,3 +132,7 @@ sparCoef = zeros(length(sweepParam),length(1:floor(samplesTrain / batchsize)));
 filename = sprintf('../Results/preFilter/sweeplambda_preFilter_batchsize%d.mat', batchsize);
 save(filename,'-v7.3')
 
+%%
+
+% dateToday = date;
+% plotSweepParam(dateToday, 'preFilter', normErr, sparCoef, sweepParam);

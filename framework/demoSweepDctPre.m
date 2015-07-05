@@ -3,12 +3,12 @@
 % Pre-processing data through 
 % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
-% start_spams
+start_spams
 
 clear
 clc
 
-load ./Results/preDCT/sweeplambda_PreDCT_batchsize50.mat normErr
+load ../Results/preDCT/sweeplambda_PreDCT_batchsize50.mat normErr
 
 mdivision = 20;
 
@@ -62,10 +62,12 @@ samplesTest  = size(TestInp,2);
 
 sweepParam = [1e-4, 1e-3, 1e-2, 1e-1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
 
-rsnr_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
-% cr_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
-prd_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
-sparsity_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
+rsnr_dl = zeros(mdivision,length(1:floor(samplesTrain / batchsize)));
+rsnr_thres = zeros(mdivision,length(1:floor(samplesTrain / batchsize)));
+prd_dl = zeros(mdivision,length(1:floor(samplesTrain / batchsize)));
+prd_thres = zeros(mdivision,length(1:floor(samplesTrain / batchsize)));
+sparsity_thres = zeros(mdivision,length(1:floor(samplesTrain / batchsize)));
+
 % basis = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 % R1 = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
 % R2 = cell(length(sweepParam),mdivision,length(1:floor(samplesTrain / batchsize)));
@@ -84,63 +86,64 @@ sparsity_dl = zeros(length(sweepParam),mdivision,length(1:floor(samplesTrain / b
 % end
 
 %%
-for k = 1 : length(sweepParam)
-    for i = 1 : mdivision 
-        m_dl = floor(i * n_dl / mdivision);
-        phi_dl = randn(m_dl,n_dl);
 
-        parfor j = 1 : floor(samplesTrain / batchsize)      % adjust iter
-            param = struct;
-            param.iter = j;
-            param.batchsize = batchsize;
-            param.K = atoms;
-            param.lambda = sweepParam(k);
-            param.numThreads = -1; 
-            param.verbose = false;
-            param.iter_updateD = 1;
-            param.D = initD;
+thres = 0.0001;
+lambda = sweepParam(3);
 
-            res = 0;
-            x2 = 0;
-            spar = 0;
+for i = 1 : mdivision 
+    m_dl = floor(i * n_dl / mdivision);
+    phi_dl = randn(m_dl,n_dl);
 
-            y_dl = [];
-            xs_dl = [];
-            x0_dl = [];
-            xhat_dl = [];
-            D = [];
+    for j = 1 : floor(samplesTrain / batchsize)      % adjust iter
+        param = struct;
+        param.iter = j;
+        param.batchsize = batchsize;
+        param.K = atoms;
+        param.lambda = lambda;
+        param.numThreads = -1; 
+        param.verbose = false;
+        param.iter_updateD = 1;
+        param.D = initD;
 
-            epochesD = floor(j * param.batchsize);
-            X = TrainInpDCT(:,1:epochesD);
-            D = mexTrainDL(X,param);
+        res = 0;
+        norm2x = 0;
+        res_thres = 0;
+        spar_thres = 0;
 
-%             coef = mexLasso(X,D,param);
-%             alpha{i,j} = coef;
-%             R1{i,j} = mean(0.5*sum((X-D*coef).^2) + param.lambda*sum(abs(coef)));
-%             R2{i,j} = mean(0.5*sum(X-D*alpha{i,j}).^2);
-%             fprintf('Objective function for i=%d, j=%d is %f', i, j, R1{i,j});
+        y_dl = [];
+        xs_dl = [];
+        x0_dl = [];
+        xhat_dl = [];
+        D = [];
 
-%             basis(i, j) = {D};
+        epochesD = floor(j * param.batchsize);
+        X = TrainInpDCT(:,1:epochesD);
+        D = mexTrainDL(X,param);
 
-            psi_dl = D;
-            A_dl = phi_dl * wt' * psi_dl;
+        psi_dl = D;
+        A_dl = phi_dl * wt' * psi_dl;
 
-            for ep = 1:samplesTest
-                y_dl = phi_dl * TestInp(:,ep);
-                x0_dl = pinv(A_dl) * y_dl; 
-                xs_dl = l1eq_pd(x0_dl, A_dl, [], y_dl, normErr(k,j)); 
-                xhat_dl = wt' * psi_dl * xs_dl;
-
-%                 spCoeff{k,i,j}(:,ep) = {xs_dl};
-%                 reconSig{k,i,j}(:,ep) = {xhat_dl};
-                res = res + sum(norm(TestInp(:,ep) - xhat_dl).^2);
-                x2 = x2 + sum(TestInp(:,ep).^2);
-                spar = spar + length(find(abs(xs_dl)>0.001) ); 
-            end
-            rsnr_dl(k,i,j) = 20 * log10(sqrt(x2 / res));
-            sparsity_dl(k,i,j) = 1 - spar / samplesTest / length(xs_dl);
-            prd_dl(k,i,j) = sqrt(res / x2);
+        for ep = 1:samplesTest
+            y_dl = phi_dl * TestInp(:,ep);
+            x0_dl = pinv(A_dl) * y_dl; 
+            xs_dl = l1eq_pd(x0_dl, A_dl, [], y_dl, normErr(3,j)); 
+            xhat_dl = wt' * psi_dl * xs_dl;
+            
+            res = res + sum(norm(TestInp(:,ep) - xhat_dl).^2);
+            norm2x = norm2x + sum(TestInp(:,ep).^2);
+            
+            xs_thres = xs_dl;
+            xs_thres(abs(xs_dl) < thres) = 0;
+            xhat_thres = psi_dl * xs_thres;
+            res_thres = res_thres + sum(norm(TestInp(:,ep) - xhat_thres).^2);
+            spar_thres = spar_thres + length(find(xs_thres)); 
         end
+        rsnr_dl(i,j) = 20 * log10(sqrt(norm2x / res));
+        prd_dl(i,j) = sqrt(res / norm2x);
+        
+        rsnr_thres(i,j) = 20 * log10(sqrt(norm2x / res_thres));
+        prd_thres(i,j) = sqrt(res_thres / norm2x);
+        sparsity_thres(i,j) = 1 - spar_thres / samplesTest / length(xs_dl);
     end
 end
 
@@ -149,10 +152,12 @@ end
 filename = sprintf('../Results/preDCT/demoSweepDctPre_m%d_batchsize%d.mat', mdivision, batchsize);
 save(filename,'-v7.3');
 
-% subplot(211)
-% plot(TestInp(:,ep));
-% subplot(212)
-% plot(xres_dl);
+%% % % % % % % % % % % % % % % % % % % % % % % % % % %
+% Plot results
+% % % % % % % % % % % % % % % % % % % % % % % % % % %
+
+% dateToday = '05-Jul-2015';
+% plotRSNR_Sparsity(dateToday, 'preDCT', mdivision, batchsize, samplesTrain, n_dl, rsnr_dl, rsnr_thres, sparsity_thres, lambda);
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % %
 % Plot reconstruction process
@@ -182,7 +187,3 @@ save(filename,'-v7.3');
 % 
 % plot(1:n_dl,reconSigMat);
 % close(writerObj);
-
-%% % % % % % % % % % % % % % % % % % % % % % % % % % %
-% Plot results
-% % % % % % % % % % % % % % % % % % % % % % % % % % %
