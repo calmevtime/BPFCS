@@ -47,12 +47,12 @@ end
 % sweep_Lambda_PreDCT;
 % sweep_Lambda_PreDWT;
 % 
-demoSweepFilter;
-demoSweepFilterDCT;
-demoSweepWithoutPre;
-demoSweepDctPre;
-demoSweepDwtPre;
+% demoSweepFilter;
+% demoSweepFilterDCT;
+% demoSweepWithoutPre;
+% demoSweepDctPre;
+% demoSweepDwtPre;
 % demoSweepWithoutPreThres;
-
+demoSweepETol;
 
 delete(poolobj)
